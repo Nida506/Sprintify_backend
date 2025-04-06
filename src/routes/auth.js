@@ -1,6 +1,6 @@
 const express = require("express");
 const authRouter = express.Router();
-
+const validator = require("validator");
 const bcrypt = require("bcrypt");
 const { validateSignUpData } = require("../utils/validation");
 const { User } = require("../models/user");
@@ -63,4 +63,29 @@ authRouter.post("/logout", async (req, res) => {
   res.send("Logged out successfully");
 });
 
+// forgot password
+//password forgot api
+authRouter.get("/forgotPassword", async (req, res) => {
+  try {
+    //validat email
+    const { emailId, password } = req.body;
+    const userInputPassword = password;
+
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) throw new Error("Email is not valid");
+    // check password strong or not
+    const isStrongPassword = await validator.isStrongPassword(
+      userInputPassword
+    );
+    if (!isStrongPassword) throw new Error("Password is not strong");
+    //create hash password
+    const hashPassword = await bcrypt.hash(userInputPassword, 10);
+    //save password to database
+    user.password = hashPassword;
+    user.save();
+    res.send("Password successfully saved");
+  } catch (err) {
+    res.status(400).send("ERROR : " + err.message);
+  }
+});
 module.exports = { authRouter };
