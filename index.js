@@ -33,6 +33,9 @@ app.use('/boards',boardRouter);
 // app.use("/", requestRouter);
 // app.use("/", userRouter);
 // app.use("/", paymentRouter);
+app.use('*', (req, res) => {
+  res.send('Invalid path');
+});
 
 connectDb()
   .then(() => {
