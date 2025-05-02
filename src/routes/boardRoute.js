@@ -7,15 +7,17 @@ const {
   getAllUsersBoards,
   updateBoard,
   deleteBoard,
-} = require("../controllers/board.controller");
-const { authenticate } = require("../middlewares/authenticate");
+} = require("../controllers/boardController");
 
-router.get("/user", authenticate, getAllUsersBoards);
-router.get("/:board_id", authenticate, getBoard);
-router.post("/create", authenticate, createBoard);
-router.patch("/", authenticate, updateBoard);
-router.delete("/", authenticate, deleteBoard);
+console.log({ createBoard, getBoard, getAllUsersBoards, updateBoard, deleteBoard });
 
-module.exports = {
-  boardRouter: router,
-};
+const { userAuth } = require("../middlewares/auth");
+console.log(userAuth);
+
+router.get("/user", userAuth, getAllUsersBoards);
+router.get("/:board_id", userAuth, getBoard);
+router.post("/", userAuth, createBoard);
+router.patch("/", userAuth, updateBoard);
+router.delete("/", userAuth, deleteBoard);
+
+module.exports = router;

@@ -1,9 +1,9 @@
 const mongodb = require("mongodb");
 
-const { Board } = require("../models/Board.model");
-const { List } = require("../models/List.model");
-const { Card } = require("../models/Card.model");
-const { errorTemplate } = require("../utilities/errorTemplate");
+const { Board } = require("../models/Board");
+const { List } = require("../models/List");
+const { Card } = require("../models/Card");
+const { errorTemplate } = require("../utils/errorTemplate");
 
 const getBoard = async (req, res) => {
   let { board_id } = req.params;
@@ -19,6 +19,7 @@ const getBoard = async (req, res) => {
       .sort({ position: 1 })
       .lean()
       .exec();
+
     let cards_array = await Card.aggregate([
       {
         $match: {
@@ -47,7 +48,7 @@ const getBoard = async (req, res) => {
       },
     ]);
 
-    cards = {};
+    let cards = {};
     cards_array.forEach((ele) => {
       cards[ele._id] = ele.list_items;
     });
@@ -55,6 +56,7 @@ const getBoard = async (req, res) => {
     lists = lists.map((ele) => {
       return { ...ele, cards: cards[ele._id] || [] };
     });
+
     board.lists = lists;
 
     return res.status(200).json({
@@ -85,15 +87,18 @@ const getAllUsersBoards = async (req, res) => {
   }
 };
 
+
 const createBoard = async (req, res) => {
-  let { name } = req.body;
+  let { name, bgColor } = req.body;
   let { user_id } = req;
 
   try {
     let payload = {
       name,
       user_id,
+      bgColor: bgColor || "#ffffff",
     };
+
     let board = await Board.create(payload);
 
     return res.status(200).json({
@@ -108,12 +113,14 @@ const createBoard = async (req, res) => {
 };
 
 const updateBoard = async (req, res) => {
-  let { name, board_id } = req.body;
+  let { name, bgColor, board_id } = req.body;
 
   try {
     let payload = {
       name,
+      ...(bgColor && { bgColor }),
     };
+
     let board = await Board.findOneAndUpdate({ _id: board_id }, payload, {
       new: true,
     })
@@ -150,7 +157,7 @@ const deleteBoard = async (req, res) => {
 
 module.exports = {
   getBoard,
-  getAllUsersBoards,
+   getAllUsersBoards,
   createBoard,
   updateBoard,
   deleteBoard,

@@ -7,6 +7,11 @@ const boardSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
+    bgColor:{
+      type:String,
+      default: "#ffffff" 
+      
+    },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
