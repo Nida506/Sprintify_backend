@@ -11,16 +11,7 @@ const {
   addNewCardToList,
 } = require('../controllers/boardController');
 
-console.log({
-  createBoard,
-  getBoard,
-  getAllUsersBoards,
-  updateBoard,
-  deleteBoard,
-});
-
 const { userAuth } = require('../middlewares/auth');
-console.log(userAuth);
 
 router.get('/getallboards', userAuth, getAllUsersBoards);
 router.get('/:board_id', userAuth, getBoard);

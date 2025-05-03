@@ -82,7 +82,6 @@ const getAllUsersBoards = async (req, res) => {
         { members: { $in: [user_id] } }, // explicitly check for inclusion in array
       ],
     }).populate('lists');
-    console.log(boards);
 
     return res.status(200).json({
       message: 'Boards fetched successfully!',
@@ -153,7 +152,6 @@ const addNewListToBoard = async (req, res) => {
     board.lists.push(newList._id);
     await board.save();
 
-    console.log('id   ', req.user._id);
     io.to(board_id).emit('list-added', { newList, userId: req.user._id });
 
     return res.status(200).json({
