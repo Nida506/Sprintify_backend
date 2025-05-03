@@ -153,7 +153,8 @@ const addNewListToBoard = async (req, res) => {
     board.lists.push(newList._id);
     await board.save();
 
-    io.to(board_id).emit('list-added', { newList, user_id });
+    console.log('id   ', req.user._id);
+    io.to(board_id).emit('list-added', { newList, userId: req.user._id });
 
     return res.status(200).json({
       message: 'List added successfully',
