@@ -27,6 +27,9 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+const invitationRoutes = require("./src/routes/invite")
+app.use("/api/invitations", invitationRoutes);
+
 app.use('/', authRouter);
 app.use('/', profileRouter);
 app.use('/', boardRouter);
