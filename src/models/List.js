@@ -22,6 +22,12 @@ const listSchema = mongoose.Schema(
       required: true,
       select: false,
     },
+    cards: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Card',
+      },
+    ],
   },
   {
     versionKey: false,

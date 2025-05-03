@@ -8,6 +8,7 @@ const {
   updateBoard,
   deleteBoard,
   addNewListToBoard,
+  addNewCardToList,
 } = require('../controllers/boardController');
 
 console.log({
@@ -25,6 +26,7 @@ router.get('/getallboards', userAuth, getAllUsersBoards);
 router.get('/:board_id', userAuth, getBoard);
 router.post('/createboard', userAuth, createBoard);
 router.post('/board/addNewList', userAuth, addNewListToBoard);
+router.patch('/board/addNewCard', userAuth, addNewCardToList);
 router.patch('/', userAuth, updateBoard);
 router.delete('/', userAuth, deleteBoard);
 
