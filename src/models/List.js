@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const listSchema = mongoose.Schema(
   {
@@ -13,12 +13,12 @@ const listSchema = mongoose.Schema(
     },
     board_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "board",
+      ref: 'board',
       required: true,
     },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      ref: 'user',
       required: true,
       select: false,
     },
@@ -28,6 +28,6 @@ const listSchema = mongoose.Schema(
   }
 );
 
-const List = mongoose.model("list", listSchema);
+const List = mongoose.model('list', listSchema);
 
 module.exports = { List };

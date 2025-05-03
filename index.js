@@ -12,7 +12,7 @@ const { profileRouter } = require('./src/routes/profile');
 // const { requestRouter } = require("./routes/request");
 // const { userRouter } = require("./routes/user");
 const cors = require('cors');
-const boardRouter  = require('./src/routes/boardRoute');
+const boardRouter = require('./src/routes/boardRoute');
 
 // require("./utils/cronjob");
 app.use(
@@ -29,7 +29,7 @@ app.use(cookieParser());
 
 app.use('/', authRouter);
 app.use('/', profileRouter);
-app.use('/boards',boardRouter);
+app.use('/', boardRouter);
 // app.use("/", requestRouter);
 // app.use("/", userRouter);
 // app.use("/", paymentRouter);

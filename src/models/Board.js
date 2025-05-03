@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const boardSchema = mongoose.Schema(
   {
@@ -7,17 +7,22 @@ const boardSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    bgColor:{
-      type:String,
-      default: "#ffffff" 
-      
+    bgColor: {
+      type: String,
+      default: '#ffffff',
     },
-    user_id: {
+    ownerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      ref: 'user',
       required: true,
       select: false,
     },
+    lists: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'list',
+      },
+    ],
   },
   {
     timestamps: true,
@@ -25,6 +30,6 @@ const boardSchema = mongoose.Schema(
   }
 );
 
-const Board = mongoose.model("board", boardSchema);
+const Board = mongoose.model('board', boardSchema);
 
 module.exports = { Board };

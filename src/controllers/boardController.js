@@ -1,9 +1,10 @@
-const mongodb = require("mongodb");
+const mongodb = require('mongodb');
 
-const { Board } = require("../models/Board");
-const { List } = require("../models/List");
-const { Card } = require("../models/Card");
-const { errorTemplate } = require("../utils/errorTemplate");
+const { Board } = require('../models/Board');
+const { List } = require('../models/List');
+const { Card } = require('../models/Card');
+const { errorTemplate } = require('../utils/errorTemplate');
+const mongoose = require('mongoose');
 
 const getBoard = async (req, res) => {
   let { board_id } = req.params;
@@ -12,7 +13,7 @@ const getBoard = async (req, res) => {
     let board = await Board.findOne({ _id: board_id }).lean().exec();
 
     if (!board) {
-      return errorTemplate(res, 400, "Invalid board id");
+      return errorTemplate(res, 400, 'Invalid board id');
     }
 
     let lists = await List.find({ board_id })
@@ -33,15 +34,15 @@ const getBoard = async (req, res) => {
       },
       {
         $group: {
-          _id: "$list_id",
+          _id: '$list_id',
           list_items: {
             $push: {
-              _id: "$_id",
-              name: "$name",
-              description: "$description",
-              position: "$position",
-              list_id: "$list_id",
-              board_id: "$board_id",
+              _id: '$_id',
+              name: '$name',
+              description: '$description',
+              position: '$position',
+              list_id: '$list_id',
+              board_id: '$board_id',
             },
           },
         },
@@ -71,44 +72,89 @@ const getBoard = async (req, res) => {
 };
 
 const getAllUsersBoards = async (req, res) => {
-  let { user_id } = req;
+  let user_id = req.user._id;
 
   try {
-    let boards = await Board.find({ user_id }).lean().exec();
+    const boards = await Board.find({ ownerId: user_id }).populate('lists');
 
     return res.status(200).json({
-      error: false,
-      data: {
-        boards,
-      },
+      message: 'Boards fetched Successfully!',
+      boards,
     });
   } catch (error) {
-    return errorTemplate(res, 400, error.message);
+    return res.status(500).json({ message: error.message });
   }
 };
 
-
 const createBoard = async (req, res) => {
   let { name, bgColor } = req.body;
-  let { user_id } = req;
+  let user_id = req.user._id;
 
   try {
     let payload = {
       name,
-      user_id,
-      bgColor: bgColor || "#ffffff",
+      ownerId: user_id,
+      bgColor: bgColor || '#ffffff',
     };
 
     let board = await Board.create(payload);
 
     return res.status(200).json({
-      error: false,
+      message: 'Board Created Successfully',
       data: {
         board,
       },
     });
   } catch (error) {
-    return errorTemplate(res, 400, error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const addNewListToBoard = async (req, res) => {
+  let { board_id, listName } = req.body;
+  const user_id = req.user?._id;
+
+  if (!board_id || !listName) {
+    return res
+      .status(500)
+      .json({ error: true, message: 'Missing board_id or listName' });
+  }
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(board_id)) {
+      return res.status(500).json({ error: true, message: 'Invalid board_id' });
+    }
+
+    const board = await Board.findById(board_id);
+    if (!board) {
+      return res.status(404).json({ error: true, message: 'Board not found' });
+    }
+
+    // ✅ Determine position as the next index
+    const position = board.lists.length;
+
+    // ✅ Create the new list with position
+    const newList = await List.create({
+      name: listName,
+      board_id,
+      user_id,
+      position,
+    });
+
+    // ✅ Add the new list's ID to the board's list array
+    board.lists.push(newList._id);
+    await board.save();
+
+    return res.status(200).json({
+      message: 'List added successfully',
+      board,
+      newList: newList,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: error.message,
+    });
   }
 };
 
@@ -148,7 +194,7 @@ const deleteBoard = async (req, res) => {
 
     return res.status(200).json({
       error: false,
-      message: "Board deleted successfully",
+      message: 'Board deleted successfully',
     });
   } catch (error) {
     return errorTemplate(res, 400, error.message);
@@ -157,8 +203,9 @@ const deleteBoard = async (req, res) => {
 
 module.exports = {
   getBoard,
-   getAllUsersBoards,
+  getAllUsersBoards,
   createBoard,
   updateBoard,
   deleteBoard,
+  addNewListToBoard,
 };

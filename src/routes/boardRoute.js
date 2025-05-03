@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
 const {
@@ -7,17 +7,25 @@ const {
   getAllUsersBoards,
   updateBoard,
   deleteBoard,
-} = require("../controllers/boardController");
+  addNewListToBoard,
+} = require('../controllers/boardController');
 
-console.log({ createBoard, getBoard, getAllUsersBoards, updateBoard, deleteBoard });
+console.log({
+  createBoard,
+  getBoard,
+  getAllUsersBoards,
+  updateBoard,
+  deleteBoard,
+});
 
-const { userAuth } = require("../middlewares/auth");
+const { userAuth } = require('../middlewares/auth');
 console.log(userAuth);
 
-router.get("/user", userAuth, getAllUsersBoards);
-router.get("/:board_id", userAuth, getBoard);
-router.post("/", userAuth, createBoard);
-router.patch("/", userAuth, updateBoard);
-router.delete("/", userAuth, deleteBoard);
+router.get('/getallboards', userAuth, getAllUsersBoards);
+router.get('/:board_id', userAuth, getBoard);
+router.post('/createboard', userAuth, createBoard);
+router.post('/board/addNewList', userAuth, addNewListToBoard);
+router.patch('/', userAuth, updateBoard);
+router.delete('/', userAuth, deleteBoard);
 
 module.exports = router;
