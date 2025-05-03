@@ -2,7 +2,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const app = express();
 const { connectDb } = require('./src/config/database');
 const cookieParser = require('cookie-parser');
 
@@ -13,8 +12,8 @@ const { profileRouter } = require('./src/routes/profile');
 // const { userRouter } = require("./routes/user");
 const cors = require('cors');
 const boardRouter = require('./src/routes/boardRoute');
+const { app, server } = require('./src/libs/socket'); // require("./utils/cronjob");
 
-// require("./utils/cronjob");
 app.use(
   cors({
     origin: 'http://localhost:5173',
@@ -43,7 +42,7 @@ app.use('*', (req, res) => {
 connectDb()
   .then(() => {
     console.log('Connection with database is established');
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log('Server is listening on port 8214');
     });
   })

@@ -3,8 +3,10 @@ const mongodb = require('mongodb');
 const { Board } = require('../models/Board');
 const { List } = require('../models/List');
 const { Card } = require('../models/Card');
-const { errorTemplate } = require('../utils/errorTemplate');
 const mongoose = require('mongoose');
+const { errorTemplate } = require('../utils/errorTemplate');
+const { io } = require('../libs/socket');
+const { ObjectId } = mongoose.Types;
 
 const getBoard = async (req, res) => {
   let { board_id } = req.params;
@@ -73,12 +75,17 @@ const getBoard = async (req, res) => {
 
 const getAllUsersBoards = async (req, res) => {
   let user_id = req.user._id;
-
   try {
-    const boards = await Board.find({ ownerId: user_id }).populate('lists');
+    const boards = await Board.find({
+      $or: [
+        { ownerId: user_id },
+        { members: { $in: [user_id] } }, // explicitly check for inclusion in array
+      ],
+    }).populate('lists');
+    console.log(boards);
 
     return res.status(200).json({
-      message: 'Boards fetched Successfully!',
+      message: 'Boards fetched successfully!',
       boards,
     });
   } catch (error) {
@@ -89,12 +96,13 @@ const getAllUsersBoards = async (req, res) => {
 const createBoard = async (req, res) => {
   let { name, bgColor } = req.body;
   let user_id = req.user._id;
-
+  let otherUserId = new ObjectId('681636dfd1b1631edc5fe9dd');
   try {
     let payload = {
       name,
       ownerId: user_id,
       bgColor: bgColor || '#ffffff',
+      members: [otherUserId],
     };
 
     let board = await Board.create(payload);
@@ -145,6 +153,9 @@ const addNewListToBoard = async (req, res) => {
     board.lists.push(newList._id);
     await board.save();
 
+    console.log('id   ', req.user._id);
+    io.to(board_id).emit('list-added', { newList, userId: req.user._id });
+
     return res.status(200).json({
       message: 'List added successfully',
       board,
@@ -155,6 +166,52 @@ const addNewListToBoard = async (req, res) => {
       error: true,
       message: error.message,
     });
+  }
+};
+
+const addNewCardToList = async (req, res) => {
+  let { list_id, description = 'default text' } = req.body;
+  const user_id = req.user?._id;
+
+  if (!list_id) {
+    return res.status(500).json({ message: 'Missing list_id or card name' });
+  }
+
+  try {
+    // ✅ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(list_id)) {
+      return res.status(400).json({ error: true, message: 'Invalid list_id' });
+    }
+
+    // ✅ Fetch the list
+    const list = await List.findById(list_id);
+    if (!list) {
+      return res.status(404).json({ error: true, message: 'List not found' });
+    }
+
+    // ✅ Determine the position of the new card
+    const position = list.cards.length;
+
+    // ✅ Create the new card
+    const newCard = await Card.create({
+      description: description.trim(),
+      position,
+      list_id,
+      board_id: list.board_id,
+      user_id,
+    });
+
+    // ✅ Add card to the list
+    list.cards.push(newCard._id);
+    await list.save();
+
+    return res.status(200).json({
+      message: 'Card added successfully',
+      card: newCard,
+      list_id: list._id,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: true, message: error.message });
   }
 };
 
@@ -208,4 +265,5 @@ module.exports = {
   updateBoard,
   deleteBoard,
   addNewListToBoard,
+  addNewCardToList,
 };

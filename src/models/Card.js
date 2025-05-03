@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const cardSchema = mongoose.Schema(
   {
@@ -9,25 +9,25 @@ const cardSchema = mongoose.Schema(
     },
     description: {
       type: String,
-      default: "",
+      default: '',
     },
     position: {
       type: Number,
-      required: true,
+      // required: true,
     },
     list_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "list",
+      ref: 'list',
       required: true,
     },
     board_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "board",
+      ref: 'board',
       required: true,
     },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+      ref: 'user',
       required: true,
       select: false,
     },
@@ -37,6 +37,6 @@ const cardSchema = mongoose.Schema(
   }
 );
 
-const Card = mongoose.model("card", cardSchema);
+const Card = mongoose.model('card', cardSchema);
 
 module.exports = { Card };
