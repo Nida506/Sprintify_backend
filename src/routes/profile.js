@@ -10,7 +10,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
     const user = req.user;
     res.send(user);
   } catch (err) {
-    res.status(400).send("ERROR : " + err.message);
+    res.status(400).send(err.message);
   }
 });
 
@@ -22,11 +22,11 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
     await loggedInUser.save();
     res.send({
-      message: `${loggedInUser.firstName} , your profile updated successfully`,
+      message: `Profile updated successfully`,
       data: loggedInUser,
     });
   } catch (err) {
-    res.status(400).send("ERROR : " + err.message);
+    res.status(400).send(err.message);
   }
 });
 

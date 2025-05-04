@@ -29,11 +29,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default:
         "https://staging.svgrepo.com/show/390455/user-person-account-avatar-profile-man.svg",
-      validate(value) {
-        if (!validator.isURL(value)) {
-          throw new Error("Not  a url");
-        }
-      },
+    },
+
+    age: {
+      type: Number,
+      default: 15,
+    },
+    about: {
+      type: String,
+      default: "I am user of Sprintify",
     },
   },
 
