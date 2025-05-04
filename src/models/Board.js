@@ -17,6 +17,12 @@ const boardSchema = mongoose.Schema(
       required: true,
       select: false,
     },
+    members: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     lists: [
       {
         type: mongoose.Schema.Types.ObjectId,
