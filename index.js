@@ -13,6 +13,7 @@ const { profileRouter } = require('./src/routes/profile');
 const cors = require('cors');
 const boardRouter = require('./src/routes/boardRoute');
 const { app, server } = require('./src/libs/socket'); // require("./utils/cronjob");
+const cardRouter = require('./src/routes/cardRoute');
 
 app.use(
   cors({
@@ -29,6 +30,7 @@ app.use(cookieParser());
 app.use('/', authRouter);
 app.use('/', profileRouter);
 app.use('/', boardRouter);
+app.use('/', cardRouter);
 // app.use("/", requestRouter);
 // app.use("/", userRouter);
 // app.use("/", paymentRouter);

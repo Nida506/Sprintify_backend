@@ -8,7 +8,6 @@ const {
   updateBoard,
   deleteBoard,
   addNewListToBoard,
-  addNewCardToList,
 } = require('../controllers/boardController');
 
 const { userAuth } = require('../middlewares/auth');
@@ -17,8 +16,8 @@ router.get('/getallboards', userAuth, getAllUsersBoards);
 router.get('/:board_id', userAuth, getBoard);
 router.post('/createboard', userAuth, createBoard);
 router.post('/board/addNewList', userAuth, addNewListToBoard);
-router.patch('/board/addNewCard', userAuth, addNewCardToList);
-router.patch('/', userAuth, updateBoard);
-router.delete('/', userAuth, deleteBoard);
+
+// router.patch('/', userAuth, updateBoard);
+// router.delete('/', userAuth, deleteBoard);
 
 module.exports = router;
