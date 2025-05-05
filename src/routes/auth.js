@@ -13,6 +13,7 @@ authRouter.post("/signup", async (req, res) => {
 
     //Encrypt the data
     const { firstName, lastName, emailId, password, photoUrl } = req.body;
+
     const passwordHash = await bcrypt.hash(password, 10);
     //create new instance of user model
 
@@ -29,7 +30,7 @@ authRouter.post("/signup", async (req, res) => {
     const token = await savedUser.getJWT();
     //expires cookies in 8 hours
     res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) });
-    res.json({ message: "User added successfully", data: savedUser });
+    res.json({ message: "Sign up successfully", data: savedUser });
   } catch (err) {
     res.status(400).send(err.message);
   }
@@ -65,10 +66,11 @@ authRouter.post("/logout", async (req, res) => {
 
 // forgot password
 //password forgot api
-authRouter.get("/forgotPassword", async (req, res) => {
+authRouter.post("/forgotPassword", async (req, res) => {
   try {
     //validat email
     const { emailId, password } = req.body;
+
     const userInputPassword = password;
 
     const user = await User.findOne({ emailId: emailId });
@@ -83,9 +85,9 @@ authRouter.get("/forgotPassword", async (req, res) => {
     //save password to database
     user.password = hashPassword;
     user.save();
-    res.send("Password successfully saved");
+    res.send("Password successfully reset");
   } catch (err) {
-    res.status(400).send("ERROR : " + err.message);
+    res.status(400).send(err.message);
   }
 });
 module.exports = { authRouter };
