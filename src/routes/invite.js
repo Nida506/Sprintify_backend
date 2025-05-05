@@ -20,7 +20,7 @@ router.post("/send-invite", async (req, res) => {
       },
     });
 
-    const signupLink = `https://sprintify-htho.vercel.app/signup?email=${encodeURIComponent(email)}&boardId=${boardId}`;
+    const signupLink = `https://sprintify-htho.vercel.app`;
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -28,7 +28,7 @@ router.post("/send-invite", async (req, res) => {
       subject: "You're invited to join a board",
       html: `
         <p>You’ve been invited to join a board on Sprintify App.</p>
-        <p><a href="${signupLink}">Click here to sign up and join</a></p>
+        <p><a href="${signupLink}">Click here to sign up or login and join</a></p>
       `
     };
 
