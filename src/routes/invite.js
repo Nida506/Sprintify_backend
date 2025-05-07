@@ -1,9 +1,12 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const Invitation = require("../models/Invitation");
-const nodemailer = require("nodemailer");
+const Invitation = require('../models/Invitation');
+const nodemailer = require('nodemailer');
 
-router.post("/send-invite", async (req, res) => {
+const { Board } = require('../models/Board'); // Make sure Board model is imported
+const { User } = require('../models/user'); // Import User model to find user by email
+
+router.post('/send-invite', async (req, res) => {
   const { email, boardId, invitedBy } = req.body;
 
   try {
@@ -11,9 +14,9 @@ router.post("/send-invite", async (req, res) => {
     const invitation = new Invitation({ email, boardId, invitedBy });
     await invitation.save();
 
-    // Email setup
+    // Send email
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -29,14 +32,29 @@ router.post("/send-invite", async (req, res) => {
       html: `
         <p>You’ve been invited to join a board on Sprintify App.</p>
         <p><a href="${signupLink}">Click here to sign up or login and join</a></p>
-      `
+      `,
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "Invitation sent" });
+
+    // Check if the invited email belongs to an existing user
+    const user = await User.findOne({ emailId: email });
+
+    if (user) {
+      // Add user to board members if not already in
+      const board = await Board.findById(boardId);
+      if (board && !board.members.includes(user._id)) {
+        board.members.push(user._id);
+        await board.save();
+      }
+    }
+
+    res
+      .status(200)
+      .json({ message: 'Invitation sent and member added (if user exists)' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to send invite" });
+    res.status(500).json({ error: 'Failed to send invite' });
   }
 });
 

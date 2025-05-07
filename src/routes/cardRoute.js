@@ -10,7 +10,7 @@ const cardRouter = express.Router();
 // } = require('../controllers/card.controller');
 // const { authenticate } = require('../middlewares/authenticate');
 const { userAuth } = require('../middlewares/auth');
-const { moveCard, addNewCardToList } = require('../controllers/cardController');
+const { addNewCardToList } = require('../controllers/cardController');
 
 // router.get('/:card_id', authenticate, getCard);
 // router.post('/create', authenticate, createCard);
@@ -19,7 +19,6 @@ const { moveCard, addNewCardToList } = require('../controllers/cardController');
 // router.delete('/', authenticate, deleteCard);
 
 //========MOVE CARDS
-cardRouter.patch('/cards/move', userAuth, moveCard);
 cardRouter.patch('/board/addNewCard', userAuth, addNewCardToList);
 
 module.exports = cardRouter;
