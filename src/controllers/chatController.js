@@ -85,4 +85,54 @@ const sendMessage = async (req, res) => {
   }
 };
 
-module.exports = { sendMessage };
+const getBoardChats = async (req, res) => {
+  const { boardId } = req.params;
+  let userId = req?.user?._id;
+
+  console.log(userId);
+  try {
+    if (!boardId || !userId) {
+      return res.status(400).json({ error: 'Missing boardId or userId' });
+    }
+
+    // Verify board exists
+    const board = await Board.findById(boardId);
+    if (!board) return res.status(404).json({ error: 'Board not found' });
+
+    // Check if the user is a member or owner
+    const isMember =
+      board.ownerId?.toString() === userId?.toString() ||
+      board.members?.map((m) => m?.toString()).includes(userId?.toString());
+
+    if (!isMember) {
+      return res
+        .status(403)
+        .json({ error: 'User is not authorized to view messages' });
+    }
+
+    // Fetch chat by roomId
+    const chat = await Chat.findOne({ roomId: boardId })
+      .populate('messages.senderId', 'firstName lastName photoUrl')
+      .populate('participants', 'firstName lastName photoUrl');
+
+    if (!chat) {
+      return res.status(200).json({ messages: [] }); // No messages yet
+    }
+
+    // Format messages
+    const formattedMessages = chat.messages.map((msg) => ({
+      roomId: boardId,
+      text: msg.text,
+      senderId: msg.senderId,
+      imageURL: msg.imageURL,
+      timestamp: msg.createdAt,
+    }));
+
+    res.status(200).json({ messages: formattedMessages });
+  } catch (error) {
+    console.error('Error fetching chat messages:', error);
+    res.status(500).json({ error: 'Failed to fetch chat messages' });
+  }
+};
+
+module.exports = { sendMessage, getBoardChats };
