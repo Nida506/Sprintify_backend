@@ -26,8 +26,6 @@ io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   socket.on('joinCollaboration', (board_id, user) => {
-    console.log(user);
-
     // if (!board_id) return;
     socket.join(board_id);
     console.log(user + '  joined ' + board_id);

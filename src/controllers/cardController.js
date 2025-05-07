@@ -144,66 +144,11 @@ const addNewCardToList = async (req, res) => {
   }
 };
 
-const moveCard = async (req, res) => {
-  const {
-    cardId,
-    sourceListId,
-    destinationListId,
-    sourceIndex,
-    destinationIndex,
-  } = req.body;
 
-  try {
-    // Validate inputs
-    if (!cardId || !sourceListId || !destinationListId) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
-
-    // Fetch source and destination lists
-    const sourceList = await List.findById(sourceListId).populate('cards');
-    const destinationList = await List.findById(destinationListId).populate(
-      'cards'
-    );
-
-    if (!sourceList || !destinationList) {
-      return res.status(404).json({ message: 'List(s) not found' });
-    }
-
-    // Find the card and remove it from the source list
-    const cardIndex = sourceList.cards.findIndex(
-      (c) => c._id.toString() === cardId
-    );
-    if (cardIndex === -1) {
-      return res.status(404).json({ message: 'Card not found in source list' });
-    }
-
-    const [movedCard] = sourceList.cards.splice(cardIndex, 1);
-
-    // Insert card into destination list
-    destinationList.cards.splice(destinationIndex, 0, movedCard);
-
-    // Save updated lists
-    await sourceList.save();
-    if (sourceListId !== destinationListId) {
-      await destinationList.save();
-    }
-
-    // Optionally: Update `position` of each card (if you store it)
-    // for (let i = 0; i < destinationList.cards.length; i++) {
-    //   await Card.findByIdAndUpdate(destinationList.cards[i]._id, { position: i });
-    // }
-
-    return res.status(200).json({ message: 'Card moved successfully' });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
-  }
-};
 module.exports = {
   // getCard,
   // updateCardNameDes,
   // updateCardPositionList,
   addNewCardToList,
   // deleteCard,
-  moveCard,
 };

@@ -14,6 +14,7 @@ const cors = require('cors');
 const boardRouter = require('./src/routes/boardRoute');
 const { app, server } = require('./src/libs/socket'); // require("./utils/cronjob");
 const cardRouter = require('./src/routes/cardRoute');
+const chatRouter = require('./src/routes/chat');
 
 app.use(
   cors({
@@ -27,13 +28,14 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-const invitationRoutes = require("./src/routes/invite")
-app.use("/api/invitations", invitationRoutes);
+const invitationRoutes = require('./src/routes/invite');
+app.use('/api/invitations', invitationRoutes);
 
 app.use('/', authRouter);
 app.use('/', profileRouter);
 app.use('/', boardRouter);
 app.use('/', cardRouter);
+app.use('/', chatRouter);
 // app.use("/", requestRouter);
 // app.use("/", userRouter);
 // app.use("/", paymentRouter);
