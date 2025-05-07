@@ -1,34 +1,34 @@
-const { List } = require("../models/List.model");
-const { Card } = require("../models/Card.model");
-const { errorTemplate } = require("../utilities/errorTemplate");
-const { getFirst, getLast, getMean } = require("../utilities/getPosition");
+const { List } = require("../models/List");
+const { Card } = require("../models/Card");
+const { errorTemplate } = require("../utils/errorTemplate");
+// const { getFirst, getLast, getMean } = require("../utils/");
 
-const getList = async (req, res) => {
-  let { list_id } = req.params;
+// const getList = async (req, res) => {
+//   let { list_id } = req.params;
 
-  try {
-    let list = await List.findOne({ _id: list_id }).lean().exec();
+//   try {
+//     let list = await List.findOne({ _id: list_id }).lean().exec();
 
-    if (!list) {
-      return errorTemplate(res, 400, "Invalid list id");
-    }
+//     if (!list) {
+//       return errorTemplate(res, 400, "Invalid list id");
+//     }
 
-    let cards = await Card.find({ list_id })
-      .sort({ position: 1 })
-      .lean()
-      .exec();
-    list.cards = cards;
+//     let cards = await Card.find({ list_id })
+//       .sort({ position: 1 })
+//       .lean()
+//       .exec();
+//     list.cards = cards;
 
-    return res.status(200).json({
-      error: false,
-      data: {
-        list,
-      },
-    });
-  } catch (error) {
-    return errorTemplate(res, 400, error.message);
-  }
-};
+//     return res.status(200).json({
+//       error: false,
+//       data: {
+//         list,
+//       },
+//     });
+//   } catch (error) {
+//     return errorTemplate(res, 400, error.message);
+//   }
+// };
 
 const createList = async (req, res) => {
   let { name, position, board_id } = req.body;
@@ -109,7 +109,7 @@ const updateListPosition = async (req, res) => {
 
 const deleteList = async (req, res) => {
   let { list_id } = req.body;
-
+  console.log("nida" + list_id);
   try {
     await List.findOneAndDelete({ _id: list_id }).lean().exec();
     await Card.deleteMany({ list_id }).lean().exec();
@@ -123,10 +123,9 @@ const deleteList = async (req, res) => {
   }
 };
 
+console.log(updateListName, deleteList);
 module.exports = {
-  getList,
-  createList,
   updateListName,
-  updateListPosition,
+
   deleteList,
 };
