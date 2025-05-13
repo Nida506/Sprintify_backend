@@ -8,6 +8,8 @@ const cookieParser = require("cookie-parser");
 // routes import
 const { authRouter } = require("./src/routes/auth");
 const { profileRouter } = require("./src/routes/profile");
+const cardMoveRoute = require("./src/routes/cardmove");
+
 // const { requestRouter } = require("./routes/request");
 // const { userRouter } = require("./routes/user");
 const cors = require("cors");
@@ -36,6 +38,7 @@ app.use("/", profileRouter);
 app.use("/", boardRouter);
 app.use("/", cardRouter);
 app.use("/", listRouter);
+app.use('/', cardMoveRoute); 
 // app.use("/", requestRouter);
 // app.use("/", userRouter);
 // app.use("/", paymentRouter);
