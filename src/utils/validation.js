@@ -1,11 +1,16 @@
 const validator = require("validator");
-
-const validateSignUpData = (req) => {
+const { User } = require("../models/user");
+const validateSignUpData = async (req) => {
   const { firstName, lastName, emailId, password, age, about } = req.body;
 
   if (!firstName || !lastName) throw new Error("Name is required");
 
   if (!validator.isEmail(emailId)) throw new Error("Invalid email format");
+
+  const existingUser = await User.findOne({ emailId });
+  if (existingUser) {
+    throw new Error("User with that email already exists");
+  }
 
   if (!validator.isStrongPassword(password)) {
     throw new Error("Password must be strong ");

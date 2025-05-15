@@ -8,11 +8,11 @@ const { User } = require("../models/user");
 //post data to  mongoDB dynamically for sign up
 authRouter.post("/signup", async (req, res) => {
   try {
-    //validation of data
-    validateSignUpData(req);
-
     //Encrypt the data
     const { firstName, lastName, emailId, password, photoUrl } = req.body;
+
+    //validation of data
+    await validateSignUpData(req);
 
     const passwordHash = await bcrypt.hash(password, 10);
     //create new instance of user model
