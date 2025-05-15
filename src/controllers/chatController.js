@@ -4,84 +4,97 @@ const { io } = require('../libs/socket');
 const cloudinary = require('../libs/cloudinary');
 
 const sendMessage = async (req, res) => {
-  const { userId, board_id, msgText, imageUrl: msg_Image } = req.body;
-
   try {
-    if (!userId || !board_id || (!msgText && !msg_Image)) {
+    console.log(req);
+    const { userId, board_id, msgText } = req.body;
+    console.log(userId, board_id, msgText);
+    const file = req.file;
+    console.log(file);
+
+    if (!userId || !board_id || (!msgText && !file)) {
       return res.status(400).json('Invalid Data');
     }
 
-    // Upload image to Cloudinary if exists
+    // Upload image to Cloudinary if a file is attached
     let image_url = '';
-    if (msg_Image) {
-      const uploadResponse = await cloudinary.uploader.upload(msg_Image);
-      image_url = uploadResponse.secure_url;
+    if (file) {
+      const uploadResponse = await cloudinary.uploader.upload_stream(
+        { resource_type: 'image' },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            return res.status(500).json('Image upload failed');
+          }
+          image_url = result.secure_url;
+          continueMessage(); // Proceed with DB operations
+        }
+      );
+
+      uploadResponse.end(file.buffer); // Pass the file buffer
+    } else {
+      continueMessage(); // No image, just proceed
     }
 
-    // Use board_id as roomId
-    const roomId = board_id;
+    async function continueMessage() {
+      const board = await Board.findById(board_id);
+      if (!board) return res.status(404).json('Board not found');
 
-    // Get the board to access members
-    const board = await Board.findById(board_id);
-    if (!board) return res.status(404).json('Board not found');
+      const isMember =
+        board.ownerId?.toString() === userId?.toString() ||
+        board.members?.map((m) => m?.toString()).includes(userId?.toString());
 
-    // Check if sender is a board member
-    // Check if sender is a board member or owner
+      if (!isMember) {
+        return res
+          .status(403)
+          .json('User is not authorized to send messages to this board');
+      }
 
-    const isMember =
-      board.ownerId?.toString() === userId?.toString() ||
-      board.members?.map((m) => m?.toString()).includes(userId?.toString());
+      const roomId = board_id;
 
-    if (!isMember)
-      return res
-        .status(403)
-        .json('User is not authorized to send messages to this board');
+      let chat = await Chat.findOne({ roomId });
+      if (!chat) {
+        chat = new Chat({
+          participants: board.members,
+          messages: [],
+          roomId,
+        });
+        await chat.save();
+      }
 
-    // Find existing chat or create a new one with board members
-    let chat = await Chat.findOne({ roomId });
-
-    if (!chat) {
-      chat = new Chat({
-        participants: board.members,
-        messages: [],
-        roomId,
+      // Push the new message
+      chat.messages.push({
+        senderId: userId,
+        text: msgText,
+        imageURL: image_url,
+        timestamp: new Date(),
       });
+
       await chat.save();
+
+      const populatedChat = await Chat.findById(chat._id)
+        .populate('messages.senderId', 'firstName lastName photoUrl')
+        .populate('participants', 'firstName lastName photoUrl');
+
+      const newMsg = populatedChat.messages[populatedChat.messages.length - 1];
+      const savedMessage = {
+        roomId,
+        text: newMsg.text,
+        senderId: newMsg.senderId,
+        imageURL: newMsg.imageURL,
+        timestamp: newMsg.createdAt,
+      };
+
+      io.to(roomId).emit('messageReceived', savedMessage);
+
+      console.log(savedMessage);
+      res.status(200).json({
+        message: 'Message sent successfully',
+        chatMessage: savedMessage,
+      });
     }
-
-    // Push the new message
-    chat.messages.push({
-      senderId: userId,
-      text: msgText,
-      imageURL: image_url,
-      timestamp: new Date(),
-    });
-
-    await chat.save();
-
-    // Populate for response
-    const populatedChat = await Chat.findById(chat._id)
-      .populate('messages.senderId', 'firstName lastName photoUrl')
-      .populate('participants', 'firstName lastName photoUrl');
-
-    // Prepare message
-    const newMsg = populatedChat.messages[populatedChat.messages.length - 1];
-    const savedMessage = {
-      roomId,
-      text: newMsg.text,
-      senderId: newMsg.senderId,
-      imageURL: newMsg.imageURL,
-      timestamp: newMsg.createdAt,
-    };
-
-    io.to(board_id).emit('messageReceived', savedMessage);
-
-    res.status(200).json({
-      message: 'Message send successfully',
-      chatMessage: savedMessage,
-    });
   } catch (error) {
     console.error('Error in message handling:', error);
+    res.status(500).json('Internal server error');
   }
 };
 
