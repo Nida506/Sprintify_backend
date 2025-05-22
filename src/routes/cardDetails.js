@@ -201,42 +201,37 @@ router.put('/:id', async (req, res) => {
 });
 
 // 3) Add a comment to card
-
 router.put('/:cardId/comments', async (req, res) => {
   const { cardId } = req.params;
-  const { activity } = req.body;
+  const { comment } = req.body;
 
-  console.log('received activity  ',activity)
-
-  if (!Array.isArray(activity) || activity.length === 0) {
-    return res.status(400).json({ error: 'Activity must be a non-empty array of comments' });
+  if (!comment || typeof comment !== "string") {
+    return res.status(400).json({ error: 'Comment must be a non-empty string' });
   }
 
   try {
-    const newComments = activity.map((text) => ({
-      comment: text,
-      createdAt: new Date(),
-    }));
-
     const card = await Card.findById(cardId);
     if (!card) {
       return res.status(404).json({ error: 'Card not found' });
     }
 
-    // Append new comments to existing ones
-    card.comments.push(...newComments);
+    const newComment = {
+      comment,
+      createdAt: new Date(),
+    };
+
+    card.comments.push(newComment);
     await card.save();
 
     res.status(200).json({
-      message: 'Comments added successfully',
-      comments: card.comments,
+      message: 'Comment added successfully',
+      newComment, // return the one just added
     });
   } catch (err) {
     console.error('Failed to update comments:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 // 4) Delete comment by comment id
 router.delete("/:cardId/comments/:commentId", async (req, res) => {
